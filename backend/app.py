@@ -157,27 +157,36 @@ def analyze_report():
                 "advice": "Please set the GEMINI_API_KEY environment variable on your backend server."
             }), 500
 
-        if 'file' not in request.files:
+        if request.is_json:
+            json_body = request.get_json() or {}
+            raw_data = json_body.get('fileData', '')
+            if not raw_data:
+                return jsonify({"summary": "No file provided", "advice": "Please select a file to analyze."}), 400
+            if ',' in raw_data:
+                raw_data = raw_data.split(',', 1)[1]
+            import base64
+            file_bytes = base64.b64decode(raw_data)
+            filename = (json_body.get('fileName') or '').lower()
+            mime_type = json_body.get('mimeType') or 'application/pdf'
+            lang = json_body.get('lang', 'en')
+        elif 'file' in request.files:
+            file = request.files['file']
+            if file.filename == '':
+                return jsonify({"summary": "Empty file name", "advice": "Please select a valid file."}), 400
+            file_bytes = file.read()
+            filename = file.filename.lower()
+            mime_type = file.mimetype
+            lang = request.form.get('lang', 'en')
+        else:
             return jsonify({"summary": "No file uploaded", "advice": "Please select a file."}), 400
             
-        file = request.files['file']
-        if file.filename == '':
-            return jsonify({"summary": "Empty file name", "advice": "Please select a valid file."}), 400
-            
-        file_bytes = file.read()
-        
         # Infer correct mimetype from file extension to bypass browser generic mimetypes
-        filename = file.filename.lower()
         if filename.endswith('.pdf'):
             mime_type = 'application/pdf'
         elif filename.endswith('.jpg') or filename.endswith('.jpeg'):
             mime_type = 'image/jpeg'
         elif filename.endswith('.png'):
             mime_type = 'image/png'
-        else:
-            mime_type = file.mimetype
-            
-        lang = request.form.get('lang', 'en')
         
         # Define prompts for medical report analysis
         prompt = (

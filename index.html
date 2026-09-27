@@ -1097,14 +1097,14 @@
   </div>
 
   <script>
-    // Dynamically choose API endpoint: use localhost for local testing (including file://), otherwise fallback to production URL
+    // Dynamically choose API endpoint:
+    // If running on localhost or via file://, use local Flask server (http://localhost:5000)
+    // If running on Netlify (e.g. saarthi8.netlify.app), use relative '' (calls Netlify Serverless Functions directly)
     const isLocal = !window.location.hostname ||
                     window.location.hostname === 'localhost' ||
                     window.location.hostname === '127.0.0.1' ||
                     window.location.protocol === 'file:';
-    const API_BASE = isLocal
-      ? 'http://localhost:5000'
-      : 'https://saarthi-backend-klqg.onrender.com'; // Replace this URL after deploying on Render
+    const API_BASE = isLocal ? 'http://localhost:5000' : '';
 
     let isLoggedIn = false;
     let currentLang = 'en';
@@ -1604,36 +1604,52 @@
         return;
       }
 
-      const formData = new FormData();
-      formData.append("file", reportInput.files[0]);
-      formData.append("lang", currentLang);
+      const file = reportInput.files[0];
       reportResults.innerHTML = "<p>Analyzing...</p>";
 
-      try {
-        const response = await fetch(`${API_BASE}/analyze-report`, {
-          method: "POST",
-          body: formData
-        });
+      const reader = new FileReader();
+      reader.onload = async function() {
+        try {
+          const base64Data = reader.result;
+          const response = await fetch(`${API_BASE}/analyze-report`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              fileData: base64Data,
+              fileName: file.name,
+              mimeType: file.type,
+              lang: currentLang
+            })
+          });
 
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.advice || data.summary || "Server error");
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.advice || data.summary || "Server error");
+          }
+
+          reportResults.innerHTML = `
+            <div class="result-box">
+              <h4>📄 Summary</h4>
+              <p>${data.summary || "No summary available"}</p>
+            </div>
+            <div class="result-box">
+              <h4>🩺 Advice</h4>
+              <p>${data.advice || "Consult doctor"}</p>
+            </div>
+          `;
+        } catch (error) {
+          console.error("Report Analysis Error:", error);
+          reportResults.innerHTML = `<p style="color:red; font-weight:bold;">Analysis failed</p><p style="color:var(--muted); font-size:14px;">Error details: ${error.message}</p>`;
         }
+      };
 
-        reportResults.innerHTML = `
-          <div class="result-box">
-            <h4>📄 Summary</h4>
-            <p>${data.summary || "No summary available"}</p>
-          </div>
-          <div class="result-box">
-            <h4>🩺 Advice</h4>
-            <p>${data.advice || "Consult doctor"}</p>
-          </div>
-        `;
-      } catch (error) {
-        console.error("Report Analysis Error:", error);
-        reportResults.innerHTML = `<p style="color:red; font-weight:bold;">Analysis failed</p><p style="color:var(--muted); font-size:14px;">Error details: ${error.message}<br>Please check if the Flask server is running at http://localhost:5000 and your GEMINI_API_KEY is configured.</p>`;
-      }
+      reader.onerror = function() {
+        reportResults.innerHTML = `<p style="color:red; font-weight:bold;">Failed to read file</p>`;
+      };
+
+      reader.readAsDataURL(file);
     }
 
     // Geolocation & Hospital Mapping Logic (Leaflet / OSM)
