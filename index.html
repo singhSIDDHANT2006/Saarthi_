@@ -1,0 +1,1735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Saarthi | AI Health Assistant</title>
+
+  <!-- Google Fonts import for enhanced readability in rural environments -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Leaflet CDNs for Map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    :root {
+      --teal-dark: #134e4a;
+      --teal: #0f766e;
+      --emerald: #10b981;
+      --cyan-light: #ecfeff;
+      --mint: #f0fdfa;
+      --white: #ffffff;
+      --text: #1f2937;
+      --muted: #64748b;
+      --border: #cdeee8;
+      --warning: #f59e0b;
+      --shadow: 0 18px 45px rgba(15, 118, 110, 0.15);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      /* Applied clean, modern typography designed for literacy and readability */
+      font-family: 'Lexend', 'Noto Sans', 'Noto Sans Devanagari', sans-serif;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: linear-gradient(180deg, #f8fffd, #ecfeff);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      padding: 14px 8%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 16px rgba(15, 118, 110, 0.08);
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .logo {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--teal);
+    }
+
+    .ai-badge {
+      width: fit-content;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--teal-dark);
+      background: linear-gradient(90deg, #d1fae5, #cffafe);
+      padding: 3px 9px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+    }
+
+    nav a,
+    nav button {
+      text-decoration: none;
+      color: #334155;
+      margin-left: 16px;
+      font-weight: 700;
+      font-size: 14px;
+      transition: 0.3s;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    nav a:hover,
+    nav button:hover {
+      color: var(--teal);
+    }
+
+    .nav-btn {
+      background: linear-gradient(135deg, var(--teal), var(--emerald));
+      color: white !important;
+      padding: 10px 16px;
+      border-radius: 8px;
+    }
+
+    /* Language Switch Style */
+    .lang-switch {
+      display: inline-flex;
+      background: #f1f5f9;
+      border-radius: 20px;
+      padding: 3px;
+      margin-left: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .lang-btn {
+      border: none;
+      background: none;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 6px 12px;
+      border-radius: 16px;
+      cursor: pointer;
+      color: #64748b;
+      transition: 0.3s;
+      margin: 0 !important;
+    }
+
+    .lang-btn.active {
+      background: var(--teal);
+      color: white !important;
+    }
+
+    section {
+      padding: 65px 8%;
+    }
+
+    .hero {
+      min-height: 86vh;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 45px;
+      align-items: center;
+    }
+
+    .tag {
+      display: inline-block;
+      background: #d1fae5;
+      color: var(--teal-dark);
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 18px;
+    }
+
+    .hero h1 {
+      font-size: 54px;
+      line-height: 1.08;
+      color: var(--teal-dark);
+      margin-bottom: 20px;
+    }
+
+    .hero p {
+      font-size: 18px;
+      color: #52615e;
+      max-width: 620px;
+      margin-bottom: 28px;
+    }
+
+    .btn {
+      display: inline-block;
+      border: none;
+      text-decoration: none;
+      padding: 13px 22px;
+      border-radius: 8px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 26px rgba(15, 118, 110, 0.2);
+    }
+
+    .primary {
+      background: linear-gradient(135deg, var(--teal), var(--emerald));
+      color: white;
+    }
+
+    .danger {
+      background: #fff1f2;
+      color: #be123c;
+      border: 1px solid #fecdd3;
+      margin-left: 10px;
+    }
+
+    .chat-card,
+    .card,
+    .panel {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .chat-card {
+      padding: 24px;
+      transition: 0.3s;
+    }
+
+    .chat-card:hover,
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .chat-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .avatar {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--teal), #67e8f9);
+      color: white;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      font-size: 20px;
+    }
+
+    .status {
+      color: var(--emerald);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .chat-box {
+      background: #fbfffe;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      min-height: 300px;
+      max-height: 360px;
+      overflow-y: auto;
+    }
+
+    .msg {
+      padding: 12px 14px;
+      border-radius: 14px;
+      margin-bottom: 12px;
+      max-width: 86%;
+      font-size: 15px;
+      animation: slideUp 0.3s ease;
+      position: relative;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .bot {
+      background: linear-gradient(135deg, #e0f2f1, #ecfeff);
+      color: #164e46;
+      border-top-left-radius: 4px;
+    }
+
+    .user {
+      background: linear-gradient(135deg, var(--teal), var(--emerald));
+      color: white;
+      margin-left: auto;
+      border-top-right-radius: 4px;
+    }
+
+    /* Speak Button Style in Messages */
+    .speak-msg-btn {
+      background: none;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+      margin-left: 8px;
+      opacity: 0.6;
+      transition: 0.3s;
+      vertical-align: middle;
+      color: inherit;
+    }
+
+    .speak-msg-btn:hover {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+
+    .typing {
+      display: none;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+      margin: 8px 0 0 4px;
+    }
+
+    .typing.show {
+      display: block;
+    }
+
+    .chat-input {
+      margin-top: 14px;
+      display: flex;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      background: white;
+    }
+
+    .chat-input input {
+      flex: 1;
+      border: none;
+      outline: none;
+      padding: 14px;
+      font-size: 15px;
+    }
+
+    /* Microphone Button Style */
+    .mic-btn {
+      background: #f0fdfa;
+      border: none;
+      border-right: 1px solid var(--border);
+      color: var(--teal);
+      padding: 0 16px;
+      font-size: 18px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .mic-btn:hover {
+      background: #cffafe;
+    }
+
+    .mic-btn.listening {
+      background: #fee2e2;
+      color: #b91c1c;
+      animation: pulse 1.5s infinite;
+    }
+
+    .chat-input button {
+      border: none;
+      background: var(--teal);
+      color: white;
+      padding: 0 18px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .title {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    .title h2 {
+      font-size: 36px;
+      color: var(--teal-dark);
+      margin-bottom: 8px;
+    }
+
+    .title p {
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .card {
+      padding: 26px;
+      transition: 0.3s;
+      cursor: pointer;
+    }
+
+    .icon {
+      font-size: 34px;
+      margin-bottom: 12px;
+    }
+
+    .card h3 {
+      color: var(--teal);
+      margin-bottom: 10px;
+    }
+
+    .card p {
+      color: #5f6f6c;
+      font-size: 15px;
+    }
+
+    .soft {
+      background: linear-gradient(135deg, var(--cyan-light), var(--mint));
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .panel {
+      padding: 28px;
+    }
+
+    .panel h3 {
+      color: var(--teal-dark);
+      font-size: 24px;
+      margin-bottom: 12px;
+    }
+
+    .panel p,
+    .panel li {
+      color: #5f6f6c;
+      margin-bottom: 10px;
+    }
+
+    .panel ul {
+      padding-left: 20px;
+    }
+
+    .upload-area {
+      border: 2px dashed #8ee7dc;
+      background: linear-gradient(180deg, #ffffff, #f0fdfa);
+      border-radius: 16px;
+      padding: 35px 22px;
+      text-align: center;
+      transition: 0.3s;
+    }
+
+    .upload-area.dragover {
+      border-color: var(--emerald);
+      background: #ecfdf5;
+      transform: scale(1.01);
+    }
+
+    .upload-area input {
+      display: none;
+    }
+
+    .upload-icon {
+      font-size: 44px;
+      margin-bottom: 10px;
+    }
+
+    .file-name {
+      margin-top: 12px;
+      font-weight: 800;
+      color: var(--teal);
+    }
+
+    .analyze-btn {
+      width: 100%;
+      margin-top: 16px;
+    }
+
+    .result-box {
+      background: #fbfffe;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+
+    .result-box h4 {
+      color: var(--teal);
+      margin-bottom: 8px;
+    }
+
+    .result-box p {
+      white-space: pre-wrap;
+      line-height: 1.6;
+      word-break: break-word;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 7px 10px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 800;
+      margin: 5px 5px 0 0;
+    }
+
+    .low {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .normal {
+      background: #d1fae5;
+      color: #047857;
+    }
+
+    .high {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .contact-box {
+      max-width: 850px;
+      margin: auto;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 28px;
+    }
+
+    .contact-box input,
+    .contact-box textarea {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      outline: none;
+      font-size: 15px;
+    }
+
+    .contact-box textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .disclaimer {
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      border-left: 6px solid var(--warning);
+      border-radius: 14px;
+      padding: 24px;
+      max-width: 980px;
+      margin: auto;
+    }
+
+    .disclaimer h2 {
+      color: #9a3412;
+      margin-bottom: 10px;
+    }
+
+    .disclaimer p {
+      color: #7c2d12;
+    }
+
+    .auth-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .auth-overlay.show {
+      display: flex;
+    }
+
+    .auth-box {
+      width: min(430px, 100%);
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+      padding: 26px;
+      position: relative;
+      animation: slideUp 0.3s ease;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      border: none;
+      background: #ecfeff;
+      color: var(--teal);
+      font-size: 20px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .auth-tabs {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .auth-tabs button {
+      flex: 1;
+      padding: 11px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: white;
+      font-weight: 800;
+      cursor: pointer;
+      color: var(--teal);
+    }
+
+    .auth-tabs button.active {
+      background: var(--teal);
+      color: white;
+    }
+
+    .auth-form {
+      display: none;
+    }
+
+    .auth-form.active {
+      display: block;
+    }
+
+    .auth-form input {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      outline: none;
+    }
+
+    .auth-note {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 12px;
+    }
+
+    footer {
+      background: var(--teal-dark);
+      color: white;
+      padding: 40px 8% 22px;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 1fr 1fr;
+      gap: 28px;
+      margin-bottom: 28px;
+    }
+
+    footer h3,
+    footer h4 {
+      margin-bottom: 10px;
+    }
+
+    footer p,
+    footer a {
+      color: #cffafe;
+      font-size: 14px;
+      text-decoration: none;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    footer a:hover {
+      color: white;
+    }
+
+    .footer-bottom {
+      border-top: 1px solid rgba(255, 255, 255, 0.18);
+      padding-top: 18px;
+      color: #cffafe;
+      font-size: 14px;
+    }
+
+    #map {
+      height: 500px;
+      width: 100%;
+      margin-top: 25px;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      z-index: 1;
+    }
+
+    #hospitals {
+      padding: 70px 8%;
+      background: white;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    @media (max-width: 950px) {
+      nav {
+        display: none;
+      }
+
+      .hero,
+      .split {
+        grid-template-columns: 1fr;
+      }
+
+      .grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .footer-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .hero h1 {
+        font-size: 42px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      header,
+      section,
+      footer {
+        padding-left: 6%;
+        padding-right: 6%;
+      }
+
+      .grid,
+      .footer-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .danger {
+        margin-left: 0;
+        margin-top: 10px;
+      }
+
+      .btn {
+        width: 100%;
+        text-align: center;
+      }
+
+      .hero h1 {
+        font-size: 34px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo">Saarthi</div>
+      <div class="ai-badge" data-translate="chat_status">Powered by Gemini AI</div>
+    </div>
+
+    <nav>
+      <a href="#home">Home</a>
+      <a href="#chatbot">Chatbot</a>
+      <a href="#telemedicine">Telemedicine</a>
+      <a href="#hospitals">Nearby Hospitals</a>
+      <a href="#tips">Health Tips</a>
+      <a href="#analyzer">Report Analyzer</a>
+      <a href="#contact">Contact Us</a>
+      <button onclick="openAuth('login')">Log in</button>
+      <button onclick="openAuth('signup')" class="nav-btn">Sign up</button>
+
+      <!-- Language Selector Toggle -->
+      <div class="lang-switch">
+        <button id="btnEn" class="lang-btn active" onclick="setLanguage('en')">EN</button>
+        <button id="btnHi" class="lang-btn" onclick="setLanguage('hi')">हिंदी</button>
+      </div>
+    </nav>
+  </header>
+
+  <section class="hero" id="home">
+    <div>
+      <span class="tag" data-translate="hero_tag">Free AI health guidance for every village</span>
+      <h1 data-translate="hero_h1">AI-Powered Health Assistant for Rural Communities</h1>
+      <p data-translate="hero_p">
+        Saarthi helps rural users ask health questions in simple language,
+        understand basic symptoms, receive first-aid guidance, analyze medical
+        reports, and know when to contact a real doctor.
+      </p>
+
+      <a href="#chatbot" class="btn primary" data-translate="btn_start">Start talking to Saarthi</a>
+      <a href="#disclaimer" class="btn danger" data-translate="btn_disclaimer">Read Medical Disclaimer</a>
+    </div>
+
+    <!-- Chatbot Widget with Voice mode and Microphone features -->
+    <div class="chat-card" id="chatbot">
+      <div class="chat-top">
+        <div class="avatar">S</div>
+        <div style="flex: 1;">
+          <h3>Saarthi</h3>
+          <p class="status" data-translate="chat_status">Online • Gemini-ready</p>
+        </div>
+        
+        <!-- Speech Synthesis Voice Mode Toggle -->
+        <label style="font-size: 12px; display: flex; align-items: center; gap: 4px; cursor: pointer; color: var(--muted); font-weight: 700;">
+          <input type="checkbox" id="voiceModeToggle" /> 🔊 Voice Mode
+        </label>
+      </div>
+
+      <div class="chat-box" id="chatBox">
+        <div class="msg bot">Namaste! I can help with symptoms, medicines, reports, hospitals, and emergency guidance. <button class="speak-msg-btn" onclick="speakText('Namaste! I can help with symptoms, medicines, reports, hospitals, and emergency guidance.')">🔊</button></div>
+        <div class="msg user">My mother has fever for 2 days.</div>
+        <div class="msg bot">Give her fluids and rest. If fever is high, continues, or she feels very weak, please visit a doctor. <button class="speak-msg-btn" onclick="speakText('Give her fluids and rest. If fever is high, continues, or she feels very weak, please visit a doctor.')">🔊</button></div>
+      </div>
+
+      <div class="typing" id="typing">Saarthi is typing...</div>
+
+      <div class="chat-input">
+        <input type="text" id="userInput" placeholder="Type your health question..." data-translate-placeholder="chat_placeholder" />
+        <!-- Speech-to-text trigger -->
+        <button id="micBtn" class="mic-btn" onclick="toggleListening()">🎙</button>
+        <button onclick="sendMessage()" data-translate="btn_send">Send</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="services">
+    <div class="title">
+      <h2 data-translate="services_h2">What Saarthi Can Help With</h2>
+      <p data-translate="services_p">Simple, safe, and rural-friendly healthcare support.</p>
+    </div>
+
+    <div class="grid">
+      <div class="card protected-feature">
+        <div class="icon">🩺</div>
+        <h3 data-translate="srv_check">Check Symptoms</h3>
+        <p data-translate="srv_check_p">Basic guidance for fever, cough, headache, weakness, stomach pain, and common symptoms.</p>
+      </div>
+
+      <div class="card protected-feature">
+        <div class="icon">🏥</div>
+        <h3 data-translate="srv_hosp">Nearby Hospitals</h3>
+        <p data-translate="srv_hosp_p">Find hospitals near your current location</p>
+        <a href="#hospitals" class="btn primary" style="margin-top:15px;" data-translate="srv_hosp_btn">Open Map</a>
+      </div>
+
+      <div class="card protected-feature">
+        <div class="icon">💊</div>
+        <h3 data-translate="srv_remind">Medicine Reminder</h3>
+        <p data-translate="srv_remind_p">Reminds patients to take medicine on time according to a doctor's prescription.</p>
+      </div>
+
+      <!-- Bypassed login protection to allow instant dial overlays during emergencies -->
+      <div class="card" onclick="openEmergency(event)">
+        <div class="icon">📞</div>
+        <h3 data-translate="srv_emer">Emergency Support</h3>
+        <p data-translate="srv_emer_p">Guides users to call emergency services or visit the nearest hospital in serious cases.</p>
+      </div>
+
+      <div class="card protected-feature">
+        <div class="icon">📄</div>
+        <h3 data-translate="srv_anal">Report Analyzer</h3>
+        <p data-translate="srv_anal_p">Upload medical reports and get simple educational explanations of values and findings.</p>
+      </div>
+
+      <div class="card protected-feature" id="tips">
+        <div class="icon">🌿</div>
+        <h3 data-translate="srv_tips">Health Tips</h3>
+        <p data-translate="srv_tips_p">Simple awareness tips about hygiene, nutrition, seasonal care, and first aid.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Map Section -->
+  <section id="hospitals">
+    <div class="title">
+      <h2>Nearby Hospitals</h2>
+      <p>Find hospitals around your current location</p>
+    </div>
+    <button class="btn primary" onclick="findHospitals()">Find Nearby Hospitals</button>
+    <div id="map"></div>
+  </section>
+
+  <section class="soft" id="telemedicine">
+    <div class="title">
+      <h2 data-translate="tele_h2">Telemedicine</h2>
+      <p data-translate="tele_p">A future bridge between rural patients and verified healthcare professionals.</p>
+    </div>
+
+    <div class="split">
+      <div class="panel">
+        <h3 data-translate="tele_h3_1">Doctor Consultation Flow</h3>
+        <p data-translate="tele_p_1">Saarthi can collect basic symptoms, age, duration, and urgency level before connecting the user to a doctor.</p>
+        <ul>
+          <li data-translate="tele_li_1_1">User explains the problem in simple words</li>
+          <li data-translate="tele_li_1_2">Assistant asks safe follow-up questions</li>
+          <li data-translate="tele_li_1_3">Urgent cases are escalated quickly</li>
+          <li data-translate="tele_li_1_4">Non-urgent cases can be scheduled for consultation</li>
+        </ul>
+        <button class="btn primary protected-action" data-translate="tele_btn_book">Book Doctor</button>
+      </div>
+
+      <div class="panel">
+        <h3 data-translate="tele_h3_2">Rural Healthcare Benefit</h3>
+        <p data-translate="tele_p_2">This helps users who live far from clinics understand the next step clearly.</p>
+        <ul>
+          <li data-translate="tele_li_2_1">Reduces confusion before hospital visits</li>
+          <li data-translate="tele_li_2_2">Supports Hindi and voice assistance</li>
+          <li data-translate="tele_li_2_3">Improves awareness of emergency signs</li>
+          <li data-translate="tele_li_2_4">Can integrate with Flask backend later</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- AI Medical Report Analyzer Section -->
+  <section id="analyzer">
+    <div class="title">
+      <h2 data-translate="anal_h2">AI Medical Report Analyzer</h2>
+      <p data-translate="anal_p">Upload PDF, JPG, or PNG medical reports and get a simple educational summary.</p>
+    </div>
+
+    <div class="split">
+      <div class="panel">
+        <h3 data-translate="anal_h3_1">Upload Medical Report</h3>
+
+        <div class="upload-area" id="uploadArea">
+          <div class="upload-icon">📄</div>
+          <h3 data-translate="anal_drag">Drag and drop your report here</h3>
+          <p data-translate="anal_types">Supported files: PDF, JPG, PNG</p>
+
+          <label class="btn primary" for="reportInput" onclick="return requireAuth(event)" data-translate="anal_choose">Choose File</label>
+          <input type="file" id="reportInput" accept=".pdf,.jpg,.jpeg,.png" />
+
+          <div class="file-name" id="fileName" data-translate="anal_file_none">No file selected</div>
+        </div>
+
+        <button class="btn primary analyze-btn" onclick="analyzeReport()" data-translate="anal_btn_run">Analyze Report</button>
+      </div>
+
+      <div class="panel">
+        <h3 data-translate="anal_h3_2">Results Panel</h3>
+
+        <div id="reportResults">
+          <div class="result-box">
+            <h4 data-translate="anal_box_1_h">📄 Report Summary</h4>
+            <p data-translate="anal_box_1_p">Upload a report and click analyze to generate a simple explanation.</p>
+          </div>
+
+          <div class="result-box">
+            <h4 data-translate="anal_box_2_h">⚠ Important Findings</h4>
+            <p data-translate="anal_box_2_p">Abnormal values will be highlighted as Low, Normal, or High.</p>
+          </div>
+
+          <div class="result-box">
+            <h4 data-translate="anal_box_3_h">🩺 Health Advice</h4>
+            <p data-translate="anal_box_3_p">Medical terms will be explained in easy language.</p>
+          </div>
+
+          <div class="result-box">
+            <h4 data-translate="anal_box_4_h">Suggested Actions</h4>
+            <p data-translate="anal_box_4_p">Doctor consultation will be suggested when necessary.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Us Section -->
+  <section id="contact" class="soft">
+    <div class="title">
+      <h2 data-translate="contact_h2">Contact Us</h2>
+      <p data-translate="contact_p">Reach out for project details, support, or future collaboration.</p>
+    </div>
+
+    <div class="contact-box">
+      <input type="text" placeholder="Your Name" />
+      <input type="email" placeholder="Your Email" />
+      <textarea placeholder="Your Message"></textarea>
+      <button class="btn primary protected-action" data-translate="contact_btn">Send Message</button>
+    </div>
+  </section>
+
+  <section id="disclaimer">
+    <div class="disclaimer">
+      <h2 data-translate="disclaimer_h2">⚠ Medical Disclaimer</h2>
+      <p data-translate="disclaimer_p">
+        This platform provides educational health guidance only and is not a substitute
+        for professional medical advice, diagnosis, or treatment. For emergencies,
+        contact a healthcare professional immediately.
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-grid">
+      <div>
+        <h3>Saarthi</h3>
+        <p>Bringing trustworthy health guidance to every rural home.</p>
+        <p>Powered by Gemini API</p>
+        <p>Future Flask Backend Integration</p>
+        <p>Built with HTML, CSS, and JavaScript</p>
+      </div>
+
+      <div>
+        <h4>Explore</h4>
+        <a href="#chatbot">Chatbot</a>
+        <a href="#telemedicine">Telemedicine</a>
+        <a href="#tips">Health Tips</a>
+        <a href="#hospitals">Nearby Hospitals</a>
+        <a href="#analyzer">Report Analyzer</a>
+      </div>
+
+      <div>
+        <h4>Company</h4>
+        <a href="#home">About</a>
+        <a href="#contact">Contact</a>
+        <a href="#disclaimer">Medical Disclaimer</a>
+      </div>
+
+      <div>
+        <h4>Emergency</h4>
+        <a href="tel:108">Dial 108</a>
+        <p>For emergencies, contact a healthcare professional immediately.</p>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      © 2026 Saarthi. Educational guidance only — not a substitute for professional medical care.
+    </div>
+  </footer>
+
+  <!-- User Login / Sign Up Overlay Modal -->
+  <div class="auth-overlay" id="authOverlay">
+    <div class="auth-box">
+      <button class="close-btn" onclick="closeAuth()">×</button>
+
+      <h2 id="authTitle">Log in to Saarthi</h2>
+      <p class="auth-note">Please log in or create an account to use Saarthi features.</p>
+
+      <div class="auth-tabs">
+        <button id="loginTab" class="active" onclick="switchAuth('login')">Log in</button>
+        <button id="signupTab" onclick="switchAuth('signup')">Sign up</button>
+      </div>
+
+      <div class="auth-form active" id="loginForm">
+        <input type="email" placeholder="Email address" />
+        <input type="password" placeholder="Password" />
+        <button class="btn primary" onclick="completeAuth()">Log in</button>
+      </div>
+
+      <div class="auth-form" id="signupForm">
+        <input type="text" placeholder="Full name" />
+        <input type="email" placeholder="Email address" />
+        <input type="password" placeholder="Create password" />
+        <button class="btn primary" onclick="completeAuth()">Create Account</button>
+      </div>
+
+      <p class="auth-note">
+        This is a frontend demo. Real authentication can be connected later using Flask backend.
+      </p>
+    </div>
+  </div>
+
+  <!-- Interactive Emergency Calling Overlays Directory -->
+  <div class="auth-overlay" id="emergencyOverlay">
+    <div class="auth-box" style="text-align: center;">
+      <button class="close-btn" onclick="closeEmergency()">×</button>
+      <h2>Emergency Help Desk</h2>
+      <p style="margin-bottom: 20px; color: var(--muted);">Click any number below to dial immediately:</p>
+      
+      <div style="display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 20px;">
+        <a href="tel:112" class="btn primary" style="background: #e11d48; text-decoration: none; padding: 14px; font-size: 16px;">🚨 National Emergency: 112</a>
+        <a href="tel:108" class="btn primary" style="background: #ea580c; text-decoration: none; padding: 14px; font-size: 16px;">🚑 Ambulance: 108</a>
+        <a href="tel:100" class="btn primary" style="background: #2563eb; text-decoration: none; padding: 14px; font-size: 16px;">👮 Police: 100</a>
+        <a href="tel:101" class="btn primary" style="background: #d97706; text-decoration: none; padding: 14px; font-size: 16px;">🔥 Fire: 101</a>
+        <a href="tel:1075" class="btn primary" style="background: #0d9488; text-decoration: none; padding: 14px; font-size: 16px;">🩺 Health Helpline: 1075</a>
+        <a href="tel:1091" class="btn primary" style="background: #c026d3; text-decoration: none; padding: 14px; font-size: 16px;">👩 Women Helpline: 1091</a>
+      </div>
+      
+      <p class="auth-note">Keep calm. Help will arrive shortly.</p>
+    </div>
+  </div>
+
+  <script>
+    // Dynamically choose API endpoint: use localhost for local testing (including file://), otherwise fallback to production URL
+    const isLocal = !window.location.hostname ||
+                    window.location.hostname === 'localhost' ||
+                    window.location.hostname === '127.0.0.1' ||
+                    window.location.protocol === 'file:';
+    const API_BASE = isLocal
+      ? 'http://localhost:5000'
+      : 'https://saarthi-backend-klqg.onrender.com'; // Replace this URL after deploying on Render
+
+    let isLoggedIn = false;
+    let currentLang = 'en';
+
+    // UI Translations Maps
+    const translations = {
+      en: {
+        hero_tag: "Free AI health guidance for every village",
+        hero_h1: "AI-Powered Health Assistant for Rural Communities",
+        hero_p: "Saarthi helps rural users ask health questions in simple language, understand basic symptoms, receive first-aid guidance, analyze medical reports, and know when to contact a real doctor.",
+        btn_start: "Start talking to Saarthi",
+        btn_disclaimer: "Read Medical Disclaimer",
+        chat_status: "Online • Gemini-ready",
+        chat_placeholder: "Type or speak your health question...",
+        btn_send: "Send",
+        services_h2: "What Saarthi Can Help With",
+        services_p: "Simple, safe, and rural-friendly healthcare support.",
+        srv_check: "Check Symptoms",
+        srv_check_p: "Basic guidance for fever, cough, headache, weakness, stomach pain, and common symptoms.",
+        srv_hosp: "Nearby Hospitals",
+        srv_hosp_p: "Find hospitals near your current location",
+        srv_hosp_btn: "Open Map",
+        srv_remind: "Medicine Reminder",
+        srv_remind_p: "Reminds patients to take medicine on time according to a doctor's prescription.",
+        srv_emer: "Emergency Support",
+        srv_emer_p: "Guides users to call emergency services or visit the nearest hospital in serious cases.",
+        srv_anal: "Report Analyzer",
+        srv_anal_p: "Upload medical reports and get simple educational explanations of values and findings.",
+        srv_tips: "Health Tips",
+        srv_tips_p: "Simple awareness tips about hygiene, nutrition, seasonal care, and first aid.",
+        tele_h2: "Telemedicine",
+        tele_p: "A future bridge between rural patients and verified healthcare professionals.",
+        tele_h3_1: "Doctor Consultation Flow",
+        tele_p_1: "Saarthi can collect basic symptoms, age, duration, and urgency level before connecting the user to a doctor.",
+        tele_li_1_1: "User explains the problem in simple words",
+        tele_li_1_2: "Assistant asks safe follow-up questions",
+        tele_li_1_3: "Urgent cases are escalated quickly",
+        tele_li_1_4: "Non-urgent cases can be scheduled for consultation",
+        tele_btn_book: "Book Doctor",
+        tele_h3_2: "Rural Healthcare Benefit",
+        tele_p_2: "This helps users who live far from clinics understand the next step clearly.",
+        tele_li_2_1: "Reduces confusion before hospital visits",
+        tele_li_2_2: "Supports Hindi and voice assistance",
+        tele_li_2_3: "Improves awareness of emergency signs",
+        tele_li_2_4: "Can integrate with Flask backend later",
+        anal_h2: "AI Medical Report Analyzer",
+        anal_p: "Upload PDF, JPG, or PNG medical reports and get a simple educational summary.",
+        anal_h3_1: "Upload Medical Report",
+        anal_drag: "Drag and drop your report here",
+        anal_types: "Supported files: PDF, JPG, PNG",
+        anal_choose: "Choose File",
+        anal_file_none: "No file selected",
+        anal_btn_run: "Analyze Report",
+        anal_h3_2: "Results Panel",
+        anal_box_1_h: "📄 Report Summary",
+        anal_box_1_p: "Upload a report and click analyze to generate a simple explanation.",
+        anal_box_2_h: "⚠ Important Findings",
+        anal_box_2_p: "Abnormal values will be highlighted as Low, Normal, or High.",
+        anal_box_3_h: "🩺 Health Advice",
+        anal_box_3_p: "Medical terms will be explained in easy language.",
+        anal_box_4_h: "Suggested Actions",
+        anal_box_4_p: "Doctor consultation will be suggested when necessary.",
+        contact_h2: "Contact Us",
+        contact_p: "Reach out for project details, support, or future collaboration.",
+        contact_btn: "Send Message",
+        disclaimer_h2: "⚠ Medical Disclaimer",
+        disclaimer_p: "This platform provides educational health guidance only and is not a substitute for professional medical advice, diagnosis, or treatment. For emergencies, contact a healthcare professional immediately."
+      },
+      hi: {
+        hero_tag: "हर गाँव के लिए मुफ्त एआई स्वास्थ्य मार्गदर्शन",
+        hero_h1: "ग्रामीण समुदायों के लिए एआई-संचालित स्वास्थ्य सहायक",
+        hero_p: "सारथी ग्रामीण उपयोगकर्ताओं को सरल भाषा में स्वास्थ्य संबंधी प्रश्न पूछने, बुनियादी लक्षणों को समझने, प्राथमिक चिकित्सा मार्गदर्शन प्राप्त करने, चिकित्सा रिपोर्टों का विश्लेषण करने और यह जानने में मदद करता है कि डॉक्टर से कब संपर्क करना है।",
+        btn_start: "सारथी से बात करना शुरू करें",
+        btn_disclaimer: "चिकित्सा अस्वीकरण पढ़ें",
+        chat_status: "ऑनलाइन • जेमिनी-सक्षम",
+        chat_placeholder: "अपना स्वास्थ्य संबंधी प्रश्न लिखें या बोलें...",
+        btn_send: "भेजें",
+        services_h2: "सारथी किस चीज़ में मदद कर सकता है",
+        services_p: "सरल, सुरक्षित और ग्रामीण अनुकूल स्वास्थ्य सेवा सहायता।",
+        srv_check: "लक्षण जांचें",
+        srv_check_p: "बुखार, खांसी, सिरदर्द, कमजोरी, पेट दर्द और आम लक्षणों के लिए बुनियादी मार्गदर्शन।",
+        srv_hosp: "निकटतम अस्पताल",
+        srv_hosp_p: "अपने वर्तमान स्थान के पास अस्पताल खोजें",
+        srv_hosp_btn: "नक्शा खोलें",
+        srv_remind: "दवा अनुस्मारक",
+        srv_remind_p: "डॉक्टर के नुस्खे के अनुसार मरीजों को समय पर दवा लेने की याद दिलाता है।",
+        srv_emer: "आपातकालीन सहायता",
+        srv_emer_p: "गंभीर मामलों में उपयोगकर्ताओं को आपातकालीन सेवाओं पर कॉल करने या निकटतम अस्पताल जाने के लिए मार्गदर्शन करता है।",
+        srv_anal: "रिपोर्ट विश्लेषक",
+        srv_anal_p: "मेडिकल रिपोर्ट अपलोड करें और मूल्यों और निष्कर्षों की सरल शैक्षिक व्याख्या प्राप्त करें।",
+        srv_tips: "स्वास्थ्य युक्तियाँ",
+        srv_tips_p: "स्वच्छता, पोषण, मौसमी देखभाल और प्राथमिक चिकित्सा के बारे में सरल जागरूकता युक्तियाँ।",
+        tele_h2: "टेलीमेडिसिन",
+        tele_p: "ग्रामीण रोगियों और सत्यापित स्वास्थ्य पेशेवरों के बीच एक भविष्य का पुल।",
+        tele_h3_1: "डॉक्टर परामर्श प्रवाह",
+        tele_p_1: "सारथी उपयोगकर्ता को डॉक्टर से जोड़ने से पहले बुनियादी लक्षण, उम्र, अवधि और तात्कालिकता स्तर एकत्र कर सकता है।",
+        tele_li_1_1: "उपयोगकर्ता सरल शब्दों में समस्या समझाता है",
+        tele_li_1_2: "सहायक सुरक्षित अनुवर्ती प्रश्न पूछता है",
+        tele_li_1_3: "तत्काल मामलों को तेजी से आगे बढ़ाया जाता है",
+        tele_li_1_4: "गैर-तत्काल मामलों को परामर्श के लिए निर्धारित किया जा सकता है",
+        tele_btn_book: "डॉक्टर बुक करें",
+        tele_h3_2: "ग्रामीण स्वास्थ्य सेवा लाभ",
+        tele_p_2: "यह उन उपयोगकर्ताओं की मदद करता है जो क्लीनिकों से दूर रहते हैं और अगले कदम को स्पष्ट रूप से समझते हैं।",
+        tele_li_2_1: "अस्पताल जाने से पहले असमंजस को कम करता है",
+        tele_li_2_2: "हिंदी और आवाज सहायता का समर्थन करता है",
+        tele_li_2_3: "आपातकालीन संकेतों के बारे में जागरूकता में सुधार करता है",
+        tele_li_2_4: "बाद में फ्लास्क बैकएंड के साथ एकीकृत किया जा सकता है",
+        anal_h2: "एआई मेडिकल रिपोर्ट विश्लेषक",
+        anal_p: "पीडीएफ, जेपीजी, या पीएनजी मेडिकल रिपोर्ट अपलोड करें और एक सरल शैक्षिक सारांश प्राप्त करें।",
+        anal_h3_1: "मेडिकल रिपोर्ट अपलोड करें",
+        anal_drag: "अपनी रिपोर्ट यहां खींचें और छोड़ें",
+        anal_types: "समर्थित फ़ाइलें: PDF, JPG, PNG",
+        anal_choose: "फ़ाइल चुनें",
+        anal_file_none: "कोई फ़ाइल चुनी नहीं गई",
+        anal_btn_run: "रिपोर्ट का विश्लेषण करें",
+        anal_h3_2: "परिणाम पैनल",
+        anal_box_1_h: "📄 रिपोर्ट सारांश",
+        anal_box_1_p: "सरल व्याख्या उत्पन्न करने के लिए एक रिपोर्ट अपलोड करें और विश्लेषण पर क्लिक करें।",
+        anal_box_2_h: "⚠ महत्वपूर्ण निष्कर्ष",
+        anal_box_2_p: "असामान्य मूल्यों को निम्न, सामान्य या उच्च के रूप में हाइलाइट किया जाएगा।",
+        anal_box_3_h: "🩺 स्वास्थ्य सलाह",
+        anal_box_3_p: "चिकित्सा शब्दों को आसान भाषा में समझाया जाएगा।",
+        anal_box_4_h: "सुझाए गए कार्य",
+        anal_box_4_p: "आवश्यकता होने पर डॉक्टर से परामर्श करने का सुझाव दिया जाएगा।",
+        contact_h2: "हमसे संपर्क करें",
+        contact_p: "परियोजना विवरण, सहायता, या भविष्य के सहयोग के लिए संपर्क करें।",
+        contact_btn: "संदेश भेजें",
+        disclaimer_h2: "⚠ चिकित्सा अस्वीकरण",
+        disclaimer_p: "यह मंच केवल शैक्षिक स्वास्थ्य मार्गदर्शन प्रदान करता है और पेशेवर चिकित्सा सलाह, निदान या उपचार का विकल्प नहीं है। आपातकालीन स्थिति में तुरंत स्वास्थ्य पेशेवर से संपर्क करें।"
+      }
+    };
+
+    const chatBox = document.getElementById("chatBox");
+    const userInput = document.getElementById("userInput");
+    const typing = document.getElementById("typing");
+
+    const uploadArea = document.getElementById("uploadArea");
+    const reportInput = document.getElementById("reportInput");
+    const fileName = document.getElementById("fileName");
+    const reportResults = document.getElementById("reportResults");
+
+    const authOverlay = document.getElementById("authOverlay");
+    const emergencyOverlay = document.getElementById("emergencyOverlay");
+
+    // Geolocation state variables
+    let map;
+
+    // Translation Toggle Logic
+    function setLanguage(lang) {
+      currentLang = lang;
+      
+      document.getElementById("btnEn").classList.toggle("active", lang === 'en');
+      document.getElementById("btnHi").classList.toggle("active", lang === 'hi');
+
+      // Update standard labels
+      document.querySelectorAll("[data-translate]").forEach(elem => {
+        const key = elem.getAttribute("data-translate");
+        if (translations[lang] && translations[lang][key]) {
+          elem.innerText = translations[lang][key];
+        }
+      });
+
+      // Update placeholders
+      document.querySelectorAll("[data-translate-placeholder]").forEach(elem => {
+        const key = elem.getAttribute("data-translate-placeholder");
+        if (translations[lang] && translations[lang][key]) {
+          elem.placeholder = translations[lang][key];
+        }
+      });
+
+      // Maintain input values/placeholders correctly
+      userInput.placeholder = translations[lang]['chat_placeholder'];
+      localStorage.setItem("saarthi_lang", lang);
+    }
+
+    // Emergency Desk Logic
+    function openEmergency(event) {
+      if(event) event.preventDefault();
+      emergencyOverlay.classList.add("show");
+    }
+
+    function closeEmergency() {
+      emergencyOverlay.classList.remove("show");
+    }
+
+    // Speech-to-Text Recognition Logic
+    let recognition;
+    let isListening = false;
+
+    function toggleListening() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Speech recognition is not supported in this browser. Please use Google Chrome or Microsoft Edge.");
+        return;
+      }
+
+      if (isListening) {
+        recognition.stop();
+        return;
+      }
+
+      if (!isLoggedIn) {
+        openAuth("login");
+        return;
+      }
+
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      
+      // Target spoken input translation dynamically
+      recognition.lang = currentLang === 'hi' ? 'hi-IN' : 'en-US';
+
+      const micBtn = document.getElementById("micBtn");
+
+      recognition.onstart = function() {
+        isListening = true;
+        micBtn.classList.add("listening");
+        micBtn.innerText = "🛑";
+        userInput.placeholder = currentLang === 'hi' ? "सुन रहा हूँ... बोलिए" : "Listening... Speak now";
+      };
+
+      recognition.onerror = function(event) {
+        console.error("Speech Recognition Error:", event);
+        stopListeningState();
+      };
+
+      recognition.onend = function() {
+        stopListeningState();
+      };
+
+      recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        userInput.value = transcript;
+      };
+
+      recognition.start();
+    }
+
+    function stopListeningState() {
+      isListening = false;
+      const micBtn = document.getElementById("micBtn");
+      micBtn.classList.remove("listening");
+      micBtn.innerText = "🎙";
+      userInput.placeholder = translations[currentLang]['chat_placeholder'];
+    }
+
+    // Preload speech voices asynchronously (fixes empty voices array bug in Chrome/Edge)
+    let voicesList = [];
+    function preloadVoices() {
+      if ('speechSynthesis' in window) {
+        voicesList = window.speechSynthesis.getVoices() || [];
+      }
+    }
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = preloadVoices;
+      preloadVoices();
+    }
+
+    // Global reference to prevent Chrome garbage collection bug (which freezes speech synthesis after one use)
+    let activeUtterance = null;
+
+    // Text-to-Speech Synthesis Logic
+    function speakText(text) {
+      try {
+        if ('speechSynthesis' in window && window.speechSynthesis) {
+          // Strip any speaker icon tags out of read voice
+          const cleanText = text.replace(/🔊/g, '').trim();
+          
+          // Resume if paused and cancel current speaking to prevent locks
+          if (window.speechSynthesis.paused) {
+            window.speechSynthesis.resume();
+          }
+          window.speechSynthesis.cancel(); // Stop current speech
+          
+          // Store in global reference to prevent garbage collection
+          activeUtterance = new SpeechSynthesisUtterance(cleanText);
+
+          // Refresh voices list in case it updated
+          if (voicesList.length === 0) {
+            preloadVoices();
+          }
+
+          let selectedVoice = null;
+          if (currentLang === 'hi') {
+            selectedVoice = voicesList.find(v => v && v.lang && v.lang.toLowerCase().startsWith('hi'));
+            if (selectedVoice) {
+              activeUtterance.voice = selectedVoice;
+              activeUtterance.lang = 'hi-IN';
+            } else {
+              // Try hi-IN lang parameter directly as backup
+              activeUtterance.lang = 'hi-IN';
+              console.warn("No Hindi voice package found in list. Attempting hi-IN lang fallback.");
+            }
+          } else {
+            selectedVoice = voicesList.find(v => v && v.lang && (v.lang.toLowerCase().startsWith('en-in') || v.lang.toLowerCase().startsWith('en')));
+            if (selectedVoice) {
+              activeUtterance.voice = selectedVoice;
+            }
+            activeUtterance.lang = 'en-US';
+          }
+
+          // Release global reference on complete or error
+          activeUtterance.onend = function() {
+            activeUtterance = null;
+          };
+          
+          // Alert user on speech engine block/error to diagnose device limitations
+          activeUtterance.onerror = function(event) {
+            console.error("Speech Synthesis Utterance Error:", event);
+            if (event.error && event.error !== 'interrupted' && event.error !== 'canceled') {
+              alert("Speech system warning: " + event.error);
+            }
+            activeUtterance = null;
+          };
+
+          window.speechSynthesis.speak(activeUtterance);
+        } else {
+          alert("Voice synthesis is not supported in your browser.");
+        }
+      } catch (error) {
+        console.error("Speech Synthesis Error:", error);
+        alert("Speech Synthesis failed: " + error.message);
+      }
+    }
+
+    // Authentication Logic
+    function openAuth(type = "login") {
+      authOverlay.classList.add("show");
+      switchAuth(type);
+    }
+
+    function closeAuth() {
+      authOverlay.classList.remove("show");
+    }
+
+    function switchAuth(type) {
+      const loginTab = document.getElementById("loginTab");
+      const signupTab = document.getElementById("signupTab");
+      const loginForm = document.getElementById("loginForm");
+      const signupForm = document.getElementById("signupForm");
+      const authTitle = document.getElementById("authTitle");
+
+      if (type === "login") {
+        loginTab.classList.add("active");
+        signupTab.classList.remove("active");
+        loginForm.classList.add("active");
+        signupForm.classList.remove("active");
+        authTitle.innerText = "Log in to Saarthi";
+      } else {
+        signupTab.classList.add("active");
+        loginTab.classList.remove("active");
+        signupForm.classList.add("active");
+        loginForm.classList.remove("active");
+        authTitle.innerText = "Create your Saarthi account";
+      }
+    }
+
+    function completeAuth() {
+      isLoggedIn = true;
+      closeAuth();
+      alert("Logged in successfully");
+    }
+
+    function requireAuth(event) {
+      if (!isLoggedIn) {
+        if (event) {
+          event.preventDefault();
+        }
+        openAuth("login");
+        return false;
+      }
+      return true;
+    }
+
+    document.querySelectorAll(".protected-feature, .protected-action").forEach(item => {
+      item.addEventListener("click", event => {
+        // Bypass if clicking directly inside non-protected links (like emergency map links)
+        if (item.classList.contains("protected-feature") && event.target.tagName === 'A' && event.target.getAttribute('href') === '#hospitals') {
+          return;
+        }
+        requireAuth(event);
+      });
+    });
+
+    // Chatbot Message Flow
+    function addMessage(text, type) {
+      const message = document.createElement("div");
+      message.className = "msg " + type;
+      message.innerText = text;
+
+      if (type === "bot") {
+        // Add direct text-to-speech button to bot bubble
+        const speakBtn = document.createElement("button");
+        speakBtn.className = "speak-msg-btn";
+        speakBtn.innerText = "🔊";
+        speakBtn.onclick = function() {
+          speakText(text);
+        };
+        message.appendChild(speakBtn);
+
+        // Read automatically if Voice Mode checkbox is toggled
+        if (document.getElementById("voiceModeToggle").checked) {
+          speakText(text);
+        }
+      }
+
+      chatBox.appendChild(message);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    async function sendMessage() {
+      if (!isLoggedIn) {
+        openAuth("login");
+        return;
+      }
+
+      const text = userInput.value.trim();
+      if (!text) return;
+
+      addMessage(text, "user");
+      userInput.value = "";
+      typing.classList.add("show");
+
+      try {
+        const response = await fetch(`${API_BASE}/chat`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ message: text, lang: currentLang })
+        });
+
+        const data = await response.json();
+        typing.classList.remove("show");
+        addMessage(data.reply, "bot");
+      } catch (error) {
+        typing.classList.remove("show");
+        addMessage("Unable to connect to Saarthi backend.", "bot");
+        console.log(error);
+      }
+    }
+
+    userInput.addEventListener("keydown", function(event) {
+      if (event.key === "Enter") {
+        sendMessage();
+      }
+    });
+
+    // Report Analyzer File Drag and Drop Logic
+    function updateFile(file) {
+      if (!file) return;
+      const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
+      if (!allowedTypes.includes(file.type)) {
+        fileName.innerText = "Only PDF, JPG, and PNG allowed";
+        return;
+      }
+      fileName.innerText = "Selected: " + file.name;
+    }
+
+    reportInput.addEventListener("change", function() {
+      if (!isLoggedIn) {
+        openAuth("login");
+        reportInput.value = "";
+        return;
+      }
+      updateFile(reportInput.files[0]);
+    });
+
+    uploadArea.addEventListener("dragover", function(event) {
+      event.preventDefault();
+      uploadArea.classList.add("dragover");
+    });
+
+    uploadArea.addEventListener("dragleave", function() {
+      uploadArea.classList.remove("dragover");
+    });
+
+    uploadArea.addEventListener("drop", function(event) {
+      event.preventDefault();
+      uploadArea.classList.remove("dragover");
+      const file = event.dataTransfer.files[0];
+      if (file) {
+        reportInput.files = event.dataTransfer.files;
+        updateFile(file);
+      }
+    });
+
+    async function analyzeReport() {
+      if (!isLoggedIn) {
+        openAuth("login");
+        return;
+      }
+
+      if (!reportInput.files.length) {
+        fileName.innerText = "Select report first";
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", reportInput.files[0]);
+      formData.append("lang", currentLang);
+      reportResults.innerHTML = "<p>Analyzing...</p>";
+
+      try {
+        const response = await fetch(`${API_BASE}/analyze-report`, {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.advice || data.summary || "Server error");
+        }
+
+        reportResults.innerHTML = `
+          <div class="result-box">
+            <h4>📄 Summary</h4>
+            <p>${data.summary || "No summary available"}</p>
+          </div>
+          <div class="result-box">
+            <h4>🩺 Advice</h4>
+            <p>${data.advice || "Consult doctor"}</p>
+          </div>
+        `;
+      } catch (error) {
+        console.error("Report Analysis Error:", error);
+        reportResults.innerHTML = `<p style="color:red; font-weight:bold;">Analysis failed</p><p style="color:var(--muted); font-size:14px;">Error details: ${error.message}<br>Please check if the Flask server is running at http://localhost:5000 and your GEMINI_API_KEY is configured.</p>`;
+      }
+    }
+
+    // Geolocation & Hospital Mapping Logic (Leaflet / OSM)
+    function findHospitals() {
+      if (!isLoggedIn) {
+        openAuth("login");
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(showPosition, showError);
+    }
+
+    function showPosition(position) {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+
+      if (map) {
+        map.remove();
+      }
+
+      map = L.map('map').setView([lat, lon], 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+
+      L.marker([lat, lon]).addTo(map).bindPopup("You are here").openPopup();
+      findNearbyHospitals(lat, lon);
+    }
+
+    async function findNearbyHospitals(lat, lon) {
+      const query = `
+        [out:json][timeout:15];
+        (
+          node["amenity"="hospital"](around:5000, ${lat}, ${lon});
+          way["amenity"="hospital"](around:5000, ${lat}, ${lon});
+          relation["amenity"="hospital"](around:5000, ${lat}, ${lon});
+        );
+        out center;
+      `;
+      
+      const endpoints = [
+        'https://overpass-api.de/api/interpreter',
+        'https://overpass.kumi.systems/api/interpreter',
+        'https://overpass.nchc.org.tw/api/interpreter'
+      ];
+
+      let success = false;
+      let errorMsg = "";
+
+      for (let url of endpoints) {
+        try {
+          const response = await fetch(url + '?data=' + encodeURIComponent(query));
+          if (!response.ok) throw new Error("HTTP error " + response.status);
+          
+          const data = await response.json();
+          if (data && data.elements) {
+            data.elements.forEach(hospital => {
+              const hLat = hospital.lat || (hospital.center && hospital.center.lat);
+              const hLon = hospital.lon || (hospital.center && hospital.center.lon);
+              if (hLat && hLon) {
+                const name = (hospital.tags && hospital.tags.name) ? hospital.tags.name : "Hospital / Health Center";
+                L.marker([hLat, hLon])
+                  .addTo(map)
+                  .bindPopup(`<b>${name}</b>`);
+              }
+            });
+            success = true;
+            break; // Stop loop since it succeeded
+          }
+        } catch (e) {
+          console.warn(`Failed to fetch from ${url}:`, e);
+          errorMsg = e.message;
+        }
+      }
+
+      if (!success) {
+        alert("Unable to fetch hospitals. (Error: " + errorMsg + "). Please try again in a few seconds.");
+      }
+    }
+
+    function showError() {
+      alert("Location access required to find nearby hospitals.");
+    }
+
+    // Initialize state on page load
+    window.addEventListener("DOMContentLoaded", () => {
+      const savedLang = localStorage.getItem("saarthi_lang") || 'en';
+      setLanguage(savedLang);
+    });
+
+    window.sendMessage = sendMessage;
+    window.analyzeReport = analyzeReport;
+    window.findHospitals = findHospitals;
+    window.toggleListening = toggleListening;
+    window.speakText = speakText;
+    window.openEmergency = openEmergency;
+    window.closeEmergency = closeEmergency;
+  </script>
+</body>
+</html>
