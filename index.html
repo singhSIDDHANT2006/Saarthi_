@@ -1098,13 +1098,15 @@
 
   <script>
     // Dynamically choose API endpoint:
-    // If running on localhost or via file://, use local Flask server (http://localhost:5000)
-    // If running on Netlify (e.g. saarthi8.netlify.app), use relative '' (calls Netlify Serverless Functions directly)
+    // Local testing uses localhost:5000
+    // Production uses your Render backend URL
     const isLocal = !window.location.hostname ||
                     window.location.hostname === 'localhost' ||
                     window.location.hostname === '127.0.0.1' ||
                     window.location.protocol === 'file:';
-    const API_BASE = isLocal ? 'http://localhost:5000' : '';
+    const API_BASE = isLocal
+      ? 'http://localhost:5000'
+      : 'https://saarthi-backend-klqg.onrender.com'; // Render backend URL
 
     let isLoggedIn = false;
     let currentLang = 'en';
