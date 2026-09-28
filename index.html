@@ -1098,9 +1098,17 @@
 
   <script>
     // Dynamically choose API endpoint:
-    // If opened directly via local file (file:///...), connect to local Flask server (http://localhost:5000)
-    // When served from Render (or any web host), use relative '' so it automatically uses the same server!
-    const API_BASE = (window.location.protocol === 'file:') ? 'http://localhost:5000' : '';
+    // 1. If running as a local file (file:///...), point to local server http://localhost:5000
+    // 2. If running on Netlify, connect to live Render backend https://saarthi-ai-48yy.onrender.com
+    // 3. If running on Render itself, use '' (relative path to same server)
+    let API_BASE = '';
+    if (window.location.protocol === 'file:') {
+      API_BASE = 'http://localhost:5000';
+    } else if (window.location.hostname.includes('netlify.app')) {
+      API_BASE = 'https://saarthi-ai-48yy.onrender.com';
+    } else {
+      API_BASE = '';
+    }
 
     let isLoggedIn = false;
     let currentLang = 'en';

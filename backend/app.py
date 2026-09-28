@@ -9,10 +9,16 @@ import google.generativeai as genai
 load_dotenv()
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 
-# Project root directory containing index.html, static assets, etc.
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+# Robust static directory detection (works from root or backend directory)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+if os.path.exists(os.path.join(BASE_DIR, 'index.html')):
+    STATIC_DIR = BASE_DIR
+elif os.path.exists(os.path.join(BASE_DIR, '..', 'index.html')):
+    STATIC_DIR = os.path.abspath(os.path.join(BASE_DIR, '..'))
+else:
+    STATIC_DIR = BASE_DIR
 
-app = Flask(__name__, static_folder=PROJECT_ROOT, static_url_path='')
+app = Flask(__name__, static_folder=STATIC_DIR, static_url_path='')
 # Enable CORS for frontend compatibility
 CORS(app)
 
@@ -104,7 +110,7 @@ def generate_with_fallback(contents, safety_settings=None, system_instruction=No
 
 @app.route('/', methods=['GET'])
 def index():
-    return send_from_directory(PROJECT_ROOT, 'index.html')
+    return send_from_directory(STATIC_DIR, 'index.html')
 
 @app.route('/health', methods=['GET'])
 def health():
