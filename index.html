@@ -1098,15 +1098,9 @@
 
   <script>
     // Dynamically choose API endpoint:
-    // Local testing uses localhost:5000
-    // Production uses your Render backend URL
-    const isLocal = !window.location.hostname ||
-                    window.location.hostname === 'localhost' ||
-                    window.location.hostname === '127.0.0.1' ||
-                    window.location.protocol === 'file:';
-    const API_BASE = isLocal
-      ? 'http://localhost:5000'
-      : 'https://saarthi-backend-klqg.onrender.com'; // Render backend URL
+    // If opened directly via local file (file:///...), connect to local Flask server (http://localhost:5000)
+    // When served from Render (or any web host), use relative '' so it automatically uses the same server!
+    const API_BASE = (window.location.protocol === 'file:') ? 'http://localhost:5000' : '';
 
     let isLoggedIn = false;
     let currentLang = 'en';

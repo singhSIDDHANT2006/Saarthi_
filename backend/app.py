@@ -1,7 +1,7 @@
 import os
 import re
 from dotenv import load_dotenv
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import google.generativeai as genai
 
@@ -9,7 +9,10 @@ import google.generativeai as genai
 load_dotenv()
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 
-app = Flask(__name__)
+# Project root directory containing index.html, static assets, etc.
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
+app = Flask(__name__, static_folder=PROJECT_ROOT, static_url_path='')
 # Enable CORS for frontend compatibility
 CORS(app)
 
@@ -101,6 +104,10 @@ def generate_with_fallback(contents, safety_settings=None, system_instruction=No
 
 @app.route('/', methods=['GET'])
 def index():
+    return send_from_directory(PROJECT_ROOT, 'index.html')
+
+@app.route('/health', methods=['GET'])
+def health():
     return jsonify({
         "status": "online",
         "service": "Saarthi AI Health Assistant",
